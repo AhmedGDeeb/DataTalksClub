@@ -82,9 +82,9 @@ By the end of the course, I will be able to:
 | Status | Module | Topics |
 | :---: | --- | --- |
 | ✅ | **Module 1: Introduction to Machine Learning** | What ML is, supervised learning, CRISP-DM, model selection, environment setup |
-| 🔄 | **Module 2: Machine Learning for Regression** | Car-price prediction, linear regression, feature engineering, regularization |
-| ⬜ | **Module 3: Machine Learning for Classification** | Customer churn, logistic regression, categorical encoding, feature importance |
-| ⬜ | **Module 4: Evaluation Metrics for Classification** | Accuracy, precision, recall, F1, ROC/AUC, cross-validation, imbalanced classes |
+| ✅ | **Module 2: Machine Learning for Regression** | Car-price prediction, linear regression, feature engineering, regularization |
+| ✅ | **Module 3: Machine Learning for Classification** | Customer churn, logistic regression, categorical encoding, feature importance |
+| 🔄 | **Module 4: Evaluation Metrics for Classification** | Accuracy, precision, recall, F1, ROC/AUC, cross-validation, imbalanced classes |
 | ⬜ | **Module 5: Deploying Machine Learning Models** | Model serialization, FastAPI, Docker, cloud deployment |
 | ⬜ | **Module 6: Decision Trees and Ensemble Learning** | Decision trees, random forests, XGBoost, hyperparameter tuning |
 | ⬜ | **Module 8: Neural Networks and Deep Learning** | Neural networks, PyTorch, TensorFlow, Keras, CNNs, transfer learning |

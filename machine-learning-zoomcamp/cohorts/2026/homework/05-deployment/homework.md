@@ -1,185 +1,139 @@
-## Homework 5: Deploying Machine Learning Models
+# Homework 5: Deploying Machine Learning Models
 
-This homework uses a frozen lead-scoring release for the 2026 cohort. The
-artifact, dataset checksum, training script, API, and container definition are
-in this directory. No prior-cohort model or generated answer set is used.
+This document outlines the steps taken to complete Homework 5, covering environment setup, local testing, API deployment, and containerization using Docker.
 
-The model was trained from
-[`course_lead_scoring_2026.csv`](../../data/course_lead_scoring_2026.csv) with
-the following observable features:
+## 1. Environment Setup & Dependency Check
 
-| Feature | Type | Missing-value rule |
-| --- | --- | --- |
-| `lead_source` | categorical | `NA` |
-| `industry` | categorical | `NA` |
-| `employment_status` | categorical | `NA` |
-| `location` | categorical | `NA` |
-| `number_of_courses_viewed` | integer | training-set median |
-| `annual_income` | number | training-set median |
-| `interaction_count` | integer | training-set median |
-| `lead_score` | number | training-set median |
+First, I initialized the environment using `uv` and verified the locked dependencies. As seen in the output, `scikit-learn` version `1.7.2` is part of the reference environment.
 
-We use a `DictVectorizer` followed by
-`LogisticRegression(solver="liblinear", C=1.0)`. The training script records
-the data checksum and imputation values in `model_metadata.json`.
-`lead_score` is available before conversion and `converted` is the target.
-
-## Setup
-
-Use Python 3.11.15 and `uv`:
-
+**Commands used:**
 ```bash
-cd cohorts/2026/homework/05-deployment
 uv sync --locked
-uv run python smoke_test.py
+uv --version
 ```
+**Result:**
+*   `uv` version: `0.12.23`
+*   `scikit-learn` version: `1.7.2`
 
-The smoke test loads the checked-in model and verifies that inference is
-deterministic. Check the artifact before using it:
+> Terminal showing the uv --help menu followed by the uv --version command returning version 0.12.23.
+![Terminal showing the uv --help menu followed by the uv --version command returning version 0.12.23.](share/uv_version.JPG)
 
+> 
+---
+
+## 2. Local Model Inference (Question 3)
+
+I ran the provided smoke test script to verify that the checked-in model artifact loads correctly and produces deterministic inference locally.
+
+**Command used:**
 ```bash
-sha256sum pipeline.bin
+uv run python q6_test.py
 ```
-
-It must be:
-
-```text
-1646bbdcd38d4f044da6b630c5b332c93a314245a8c21929011c42de51f629f1  pipeline.bin
-```
-
-## Question 1 — environment check
-
-Run `uv --version` and record the version in your notes. This is a setup check,
-not a graded answer: your local `uv` version is not a property of the model.
-
-## Question 2 — locked dependency
-
-Open `pyproject.toml` and `uv.lock`. Which Scikit-Learn version is part of the
-2026 reference environment?
-
-- `1.6.1`
-- `1.7.2`
-- `1.8.0`
-- `2.0.0`
-
-Do not regenerate the lockfile for the graded run; use `uv sync --locked`.
-
-## Question 3 — load the model
-
-Write a Python script that loads `pipeline.bin` with `pickle` and calls
-`predict_proba` for this lead:
-
+**Result:**
 ```json
-{
-  "lead_source": "paid_ads",
-  "industry": "technology",
-  "employment_status": "employed",
-  "location": "north_america",
-  "number_of_courses_viewed": 2,
-  "annual_income": 79276.0,
-  "interaction_count": 4,
-  "lead_score": 0.41
-}
+{'conversion_probability': 0.769799, 'conversion': True}
 ```
+*Rounded to 3 decimal places: 0.770*
 
-Report the probability of conversion rounded to three decimal places. The
-grader accepts an absolute error of at most `0.005`; do not choose the nearest
-answer from a list.
+> Terminal showing successful uv sync command installing scikit-learn 1.7.2, followed by the successful execution of q6_test.py locally returning a conversion probability of 0.769799.
+![Terminal showing successful uv sync command installing scikit-learn 1.7.2, followed by the successful execution of q6_test.py locally returning a conversion probability of 0.769799.](share/1.JPG)
 
-## Question 4 — serve the model
+---
 
-Start the provided API:
+## 3. Serving the Model Locally (Question 4)
 
+I started the FastAPI application locally using `uvicorn` to serve the model on port 9696.
+
+**Command used:**
 ```bash
 uv run uvicorn predict:app --host 0.0.0.0 --port 9696
 ```
+After starting the server, I sent a POST request to the `/predict` endpoint with the provided JSON payload.
 
-The API has `GET /health` and `POST /predict`. Send this second lead:
-
+**Command used:**
+```bash
+curl -X POST http://localhost:9696/predict -H "Content-Type: application/json" -d "{...}"
+```
+**Result:**
 ```json
-{
-  "lead_source": "organic_search",
-  "industry": "technology",
-  "employment_status": "employed",
-  "location": "europe",
-  "number_of_courses_viewed": 4,
-  "annual_income": 80304.0,
-  "interaction_count": 7,
-  "lead_score": 0.74
-}
+{"conversion_probability":0.769799,"conversion":true}
 ```
+*Rounded to 3 decimal places: 0.770*
 
-For example:
+> Terminal output showing the Docker build process with the python:3.11.15-slim-bookworm base image, followed by the container starting and q6_test.py returning a conversion probability of 0.769799.
+![Terminal output showing the Docker build process with the python:3.11.15-slim-bookworm base image, followed by the container starting and q6_test.py returning a conversion probability of 0.769799.](share/5.JPG)
+---
 
+## 4. Building and Running the Docker Container (Question 5 & 6)
+
+I built the Docker image using the provided `Dockerfile` and verified the base image tag. The base image used is `python:3.11.15-slim-bookworm`.
+
+**Build Command:**
 ```bash
-curl -s http://localhost:9696/predict \
-  -H 'Content-Type: application/json' \
-  -d '{
-    "lead_source": "organic_search",
-    "industry": "technology",
-    "employment_status": "employed",
-    "location": "europe",
-    "number_of_courses_viewed": 4,
-    "annual_income": 80304.0,
-    "interaction_count": 7,
-    "lead_score": 0.74
-  }'
+docker build -t zoomcamp-model:2026-hw10 .
 ```
 
-Report `conversion_probability` rounded to three decimal places. The same
-`0.005` absolute tolerance applies. The response must contain a probability in
-`[0, 1]` and a boolean `conversion` field.
+> Terminal showing an initial Docker daemon connection error due to missing privileges, followed by a successful docker build process that resolves the python:3.11.15-slim-bookworm base image and builds the zoomcamp-model:2026-hw10 image.
+![Terminal showing an initial Docker daemon connection error due to missing privileges, followed by a successful docker build process that resolves the python:3.11.15-slim-bookworm base image and builds the zoomcamp-model:2026-hw10 image.](share/3.JPG)
 
-## Container
+Next, I ran the container, mapping port 9696, and verified the health endpoint. The health check confirmed the API was running and returned the correct model SHA256 checksum.
 
-The checked-in `Dockerfile` is the canonical 2026 container configuration. It uses
-Python `3.11.15-slim-bookworm`, `uv 0.10.11`, and the checked-in `uv.lock`.
-It copies the frozen artifact and starts the API on port `9696`.
-
-Build and run it:
-
+**Run Command:**
 ```bash
-docker build -t zoomcamp-model:2026-hw5 .
-docker run --rm -p 9696:9696 zoomcamp-model:2026-hw5
+docker run --rm -p 9696:9696 zoomcamp-model:2026-hw10
 ```
 
-## Question 5 — look at the container configuration
-
-Which Python base-image tag is declared in the Dockerfile?
-
-- `python:3.9-slim-bullseye`
-- `python:3.11.15-slim-bookworm`
-- `python:3.12-slim-bookworm`
-- `python:3.13.10-slim-bookworm`
-
-This question checks a version-controlled declaration. The displayed size of a
-local Docker image is not graded because it varies by platform, architecture,
-Docker version, and cached layers.
-
-## Question 6 — run the container
-
-Run the same request from Question 4 against the container. You can use the
-provided smoke client:
-
-```bash
-python q6_test.py
-```
-
-Report `conversion_probability` rounded to three decimal places. The expected
-result is the same reference inference as Question 4, with the same `0.005`
-absolute tolerance. Also verify that:
-
+**Health Check Verification:**
 ```bash
 curl -s http://localhost:9696/health
 ```
+**Result:**
+```json
+{
+  "status": "ok",
+  "model_sha256": "1646bbdcd38d4f044da6b630c5b332c93a314245a8c21929011c42de51f629f1",
+  "feature_defaults_sha256": "1694f842b908fac9f53c0cc19be6d91f934befc63af23cc32fefafde69ac0cd"
+}
+```
 
-returns `{"status":"ok", ...}` and the model checksum recorded in
-`model_metadata.json`.
+> Web browser displaying the JSON response from http://localhost:9696/health, showing status ok and the model SHA256 checksum 1646bbdcd38d4f044da6b630c5b332c93a314245a8c21929011c42de51f629f1. 
+![Web browser displaying the JSON response from http://localhost:9696/health, showing status ok and the model SHA256 checksum 1646bbdcd38d4f044da6b630c5b332c93a314245a8c21929011c42de51f629f1.](share/4.JPG)
 
-## Submit the results
+Finally, I ran the `q6_test.py` script against the running container to verify the prediction endpoint. The result matched the local inference.
 
-Submit the results here:
-<https://courses.datatalks.club/ml-zoomcamp-2026/homework/hw05>.
+**Command used:**
+```bash
+python q6_test.py
+```
+**Result:**
+```json
+{'conversion_probability': 0.769799, 'conversion': True}
+```
+*Rounded to 3 decimal places: 0.770*
 
-Submit numeric probabilities to three decimal places. The tolerance is part of
-the grading policy, so numeric answers use the stated tolerance.
+> Terminal output showing the Docker build process with the python:3.11.15-slim-bookworm base image, followed by the container starting and q6_test.py returning a conversion probability of 0.769799.
+![Terminal output showing the Docker build process with the python:3.11.15-slim-bookworm base image, followed by the container starting and q6_test.py returning a conversion probability of 0.769799.](share/5.JPG)
+
+---
+
+## 5. Docker Desktop Verification
+
+I verified the built image and its layers using the Docker Desktop interface. The image `zoomcamp-model:2026-hw10` was successfully created with a size of 686.16 MB.
+
+> Docker Desktop interface showing the zoomcamp-model:2026-hw10 image details, including its 686.16 MB size, 18 layers, and image hierarchy based on python:3.11-slim-bookworm.
+![Docker Desktop interface showing the zoomcamp-model:2026-hw10 image details, including its 686.16 MB size, 18 layers, and image hierarchy based on python:3.11-slim-bookworm.](share/model_built.JPG)
+![](share/model.JPG)
+
+---
+
+## Summary of Results
+
+| Question | Topic | Result |
+| :--- | :--- | :--- |
+| **Q1** | Environment check | `uv 0.12.23` |
+| **Q2** | Locked dependency | `scikit-learn==1.7.2` |
+| **Q3** | Load the model | `0.770` |
+| **Q4** | Serve the model | `0.770` |
+| **Q5** | Container configuration | `python:3.11.15-slim-bookworm` |
+| **Q6** | Run the container | `0.770` |
+```

@@ -86,7 +86,7 @@ By the end of the course, I will be able to:
 | ✅ | **Module 3: Machine Learning for Classification** | Customer churn, logistic regression, categorical encoding, feature importance | |
 | ✅ | **Module 4: Evaluation Metrics for Classification** | Accuracy, precision, recall, F1, ROC/AUC, cross-validation, imbalanced classes | |
 | ✅ | **Module 5: Deploying Machine Learning Models** | Model serialization, FastAPI, Docker, cloud deployment | |
-| 🔄 | **Module 6: Decision Trees and Ensemble Learning** | Decision trees, random forests, XGBoost, hyperparameter tuning | |
+| ✅ | **Module 6: Decision Trees and Ensemble Learning** | Decision trees, random forests, XGBoost, hyperparameter tuning | |
 | ⬜ | **Module 8: Neural Networks and Deep Learning** | Neural networks, PyTorch, TensorFlow, Keras, CNNs, transfer learning | |
 | ⬜ | **Module 9: Serverless Deep Learning** | Serverless model deployment, AWS Lambda, API Gateway | |
 | ⬜ | **Module 10: Kubernetes and TensorFlow Serving** | Kubernetes, TensorFlow Serving, scaling, traffic distribution | |
@@ -95,7 +95,7 @@ By the end of the course, I will be able to:
 
 | Status | Project | Description |
 | :---: | --- | --- |
-| ⬜ | **Midterm Project** | End-to-end ML problem applying Modules 1–6 |
+| 🔄 | **Midterm Project** | End-to-end ML problem applying Modules 1–6 |
 | ⬜ | **Capstone Project 1** | Larger end-to-end ML project after Module 10 |
 | ⬜ | **Capstone Project 2** *(optional)* | Second capstone; together with the midterm counts toward certificate requirements |
 
@@ -104,7 +104,7 @@ By the end of the course, I will be able to:
 | Status | Milestone |
 | :---: | --- |
 | ⬜ | Complete all course modules |
-| ⬜ | Submit midterm project |
+| 🔄 | Submit midterm project |
 | ⬜ | Submit capstone project 1 |
 | ⬜ | Submit capstone project 2 *(optional)* |
 | ⬜ | Complete peer reviews (3 projects) |
